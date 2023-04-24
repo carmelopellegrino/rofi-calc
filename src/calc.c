@@ -42,6 +42,7 @@ G_MODULE_EXPORT Mode mode;
 typedef struct
 {
     char* cmd;
+    char* prev_cmd;
     char *hint_result;
     char *hint_welcome;
     char *last_result;
@@ -547,8 +548,16 @@ static void process_cb(GObject* source_object, GAsyncResult* res, gpointer user_
 
 static char* calc_preprocess_input(Mode* sw, const char* input)
 {
+    g_debug("calc_preprocess_input");
+    g_debug("input=%s", input);
     GError *error = NULL;
     CALCModePrivateData* pd = (CALCModePrivateData*)mode_get_private_data(sw);
+    if (pd->prev_cmd != NULL && strcmp(pd->prev_cmd, input) == 0) {
+      return g_strdup(input);
+    }
+
+    g_free(pd->prev_cmd);
+    pd->prev_cmd = g_strdup(input);
 
     char *qalc_binary = "qalc";
     if (find_arg(QALC_BINARY_OPTION) >= 0) {
